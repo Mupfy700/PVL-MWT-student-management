@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  postgres-db:
+    image: postgres:latest
+    container_name: my_postgres_container
+    environment:
+      - POSTGRES_DB=my_database
+      - POSTGRES_USER=my_user
+      - POSTGRES_PASSWORD=my_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  spring-boot-app:
+    build:
+      context: mwt-pvl  # Ensure this is the path to your Spring Boot app's Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/my_database
+      - SPRING_DATASOURCE_USERNAME=my_user
+      - SPRING_DATASOURCE_PASSWORD=my_password
+    depends_on:
+      - postgres-db
+
+  react-frontend:
+    build:
+      context: students-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - spring-boot-app
+
+volumes:
+  postgres_data:
